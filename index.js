@@ -20,8 +20,6 @@ function generateUniqueId() {
   return `ID-${timestamp}-${randomString}`;
 }
 
-// console.log(generateUniqueId());
-
 function addTodo() {
   // TODO: Implementasi logika untuk menambah to-do baru
   // 1. Minta input teks to-do dari user menggunakan `prompt()`
@@ -119,9 +117,11 @@ function deleteTodo() {
   listTodos();
 
   if (todos.length > 0) {
+    /* select menu */
     userinput = getuserinput("Enter the number of the todo you want to mark as DELETE:", todos.length);
     commandInput = userinput["commandInput"];
     isValidIndex = userinput["isValidIndex"];
+    /* select menu */
 
 
     if (isValidIndex) {
