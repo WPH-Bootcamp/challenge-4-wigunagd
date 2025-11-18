@@ -2,6 +2,12 @@ const prompt = require("prompt-sync")({ sigint: true });
 
 let todos = [];
 
+/* variable input */
+let userinput;
+let commandInput = "";
+let isValidIndex = true;
+/* variable input */
+
 function generateUniqueId() {
   // TODO: Implementasi fungsi untuk menghasilkan ID unik
   // Ini akan digunakan secara internal untuk setiap objek to-do
@@ -27,7 +33,7 @@ function addTodo() {
   const toDoText = prompt("Create new todo item: ");
 
   if (toDoText === null || toDoText.trim() === "") {
-    console.warn("Null/empty input detected.");
+    console.log("Null/empty input detected.");
   } else {
     const newToDo = {
       id: generateUniqueId(),
@@ -45,25 +51,24 @@ function addTodo() {
 
 }
 
-// addTodo();
+function getuserinput(msgprompt, maxnumber) {
 
-function inputNumberPrompt(action, maximum) {
+  commandInput = prompt(msgprompt);
+  isValidIndex = true;
 
-  const input = prompt(action);
-  if (input === null || isNaN(input) || input.trim() === "") {
-    console.error("Invalid input. Please enter a number.");
-    return -1;
-  }else{
-    const rtntodoIndex = parseInt(input.trim() - 1);
-    const isValidIndex = rtntodoIndex >= 0 && rtntodoIndex < maximum;
-  
-    if (!isValidIndex) {
-      console.error(`Invalid input. Please enter a number between 1 and ${maximum}.`);
-      return -1;
-    }else{
-      return rtntodoIndex;
+  if (commandInput === null || isNaN(commandInput) || commandInput.trim() === "") {
+    isValidIndex = false;
+  } else {
+    if (commandInput <= 0 || commandInput > maxnumber) {
+      isValidIndex = false;
     }
   }
+
+  const rtn = {
+    commandInput: commandInput,
+    isValidIndex: isValidIndex
+  };
+  return rtn;
 }
 
 function markTodoCompleted() {
@@ -75,13 +80,18 @@ function markTodoCompleted() {
   // 5. Beri feedback ke user bahwa to-do berhasil ditandai selesai
   // 6. Tangani kasus jika to-do sudah selesai
 
+
   listTodos();
-
   if (todos.length > 0) {
-    const todoIndex = inputNumberPrompt("Enter the number of the todo you want to mark as COMPLETE:", todos.length);
+    /* select menu */
+    userinput = getuserinput("Enter the number of the todo you want to mark as COMPLETE:", todos.length);
+    commandInput = userinput["commandInput"];
+    isValidIndex = userinput["isValidIndex"];
+    /* select menu */
 
-    if (todoIndex > 0) {
-      const todoToUpdate = todos[todoIndex];
+    if (isValidIndex) {
+      commandInput = commandInput - 1;
+      const todoToUpdate = todos[commandInput];
       if (todoToUpdate.isCompleted) {
         console.log(`Todo "${todoToUpdate.text}" is already marked as [DONE].`);
         return;
@@ -89,11 +99,13 @@ function markTodoCompleted() {
 
       todoToUpdate.isCompleted = true;
 
-      console.log(`Success! Todo #${todoIndex + 1} ("${todoToUpdate.text}") has been marked as [DONE].`);
+      console.log(`Success! Todo #${commandInput + 1} ("${todoToUpdate.text}") has been marked as [DONE].`);
 
-      listTodos();
+    } else {
+      console.log("Invalid number. Please enter a valid number from the list.");
     }
   }
+
 }
 
 function deleteTodo() {
@@ -107,21 +119,24 @@ function deleteTodo() {
   listTodos();
 
   if (todos.length > 0) {
-    const todoIndex = inputNumberPrompt("Enter the number of the todo you want to mark as DELETE:", todos.length);
+    userinput = getuserinput("Enter the number of the todo you want to mark as DELETE:", todos.length);
+    commandInput = userinput["commandInput"];
+    isValidIndex = userinput["isValidIndex"];
 
 
-    if (todoIndex > 0) {
-      const deletedTodo = todos[todoIndex];
+    if (isValidIndex) {
+      commandInput = commandInput - 1;
+      const deletedTodo = todos[commandInput];
 
-      todos.splice(todoIndex, 1);
+      todos.splice(commandInput, 1);
 
-      console.log(`Successfully DELETED todo #${todoIndex + 1}: "${deletedTodo.text}"`);
+      console.log(`Successfully DELETED todo #${commandInput + 1}: "${deletedTodo.text}"`);
 
-      listTodos();
+    } else {
+      console.log("Invalid number. Please enter a valid number from the list.");
     }
   }
 }
-
 
 function listTodos() {
   // TODO: Implementasi logika untuk menampilkan semua to-do
@@ -132,23 +147,21 @@ function listTodos() {
   //    Contoh format: "1. [ACTIVE] | Belajar JavaScript"
   // 5. Tampilkan garis penutup daftar
 
-  if (todos.length === 0) {
-    console.log("----------------------------");
-    console.log("Your todo list is empty! Nothing to do for now.");
-    console.log("----------------------------");
-  } {
+  if (todos.length > 0) {
     console.log("----------------------------");
     console.log("Current todo lists (" + todos.length + ")");
     console.log("----------------------------");
     todos.forEach((todos, index) => {
       const statustodo = todos.isCompleted ? "[DONE]" : "[ACTIVE]";
-      console.log(`${index + 1}. ${statustodo} - ${todos.text}`);
+      console.log(`${index + 1}. ${statustodo} | ${todos.text}`);
     });
+    console.log("----------------------------");
+  } else {
+    console.log("----------------------------");
+    console.log("No to-dos to display.");
     console.log("----------------------------");
   }
 }
-
-// listTodos();
 
 function displayMenu() {
   const menu = `
@@ -178,43 +191,52 @@ function runTodoApp() {
     // 5. Tangani input perintah yang tidak valid
 
     displayMenu();
-    let commandInput = inputNumberPrompt("Select Menu:", 5);
-    console.log("");
-    commandInput += 1;
-    //console.clear();
 
-    switch (commandInput) {
-      case 1:
-        console.log("--- Menu: List Todos ---");
-        listTodos();
-        break;
+    /* select menu */
+    userinput = getuserinput("Select Menu:", 5);
+    commandInput = userinput["commandInput"];
+    isValidIndex = userinput["isValidIndex"];
+    /* select menu */
 
-      case 2:
-        console.log("--- Menu: Add Todo ---");
-        addTodo();
-        break;
+    if (isValidIndex) {
+      console.log("");
+      commandInput = Number(commandInput);
 
-      case 3:
-        console.log("--- Menu: Mark Complete ---");
-        markTodoCompleted();
-        break;
+      switch (commandInput) {
+        case 1:
+          console.log("--- Menu: List Todos ---");
+          listTodos();
+          break;
 
-      case 4:
-        console.log("--- Menu: Delete Todo ---");
-        deleteTodo();
-        break;
+        case 2:
+          console.log("--- Menu: Add Todo ---");
+          addTodo();
+          break;
 
-      case 5:
-        console.log("Thank you for using the ToDo App. Goodbye!");
-        running = false;
-        break;
+        case 3:
+          console.log("--- Menu: Mark Complete ---");
+          markTodoCompleted();
+          break;
 
-      default:
-        break;
+        case 4:
+          console.log("--- Menu: Delete Todo ---");
+          deleteTodo();
+          break;
+
+        case 5:
+          console.log("Thank you for using the ToDo App. Goodbye!");
+          running = false;
+          break;
+
+        default:
+          break;
+      }
+
+      console.log("************************************");
+      console.log("");
+    } else {
+      console.log("Invalid number. Please enter a valid number from the list.");
     }
-
-    console.log("************************************");
-    console.log("");
   }
 }
 
